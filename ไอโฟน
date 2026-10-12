@@ -1,0 +1,267 @@
+-- =====================================================
+-- 📱 ไอโฟน888❤️ Rainbow Edition (UI สายรุ้ง)
+-- =====================================================
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- ลบ UI เก่าหากมีค้างอยู่
+if PlayerGui:FindFirstChild("IPhone888RainbowUI") then
+    PlayerGui.IPhone888RainbowUI:Destroy()
+end
+
+-- 1. สร้าง ScreenGui หลัก
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "IPhone888RainbowUI"
+ScreenGui.Parent = PlayerGui
+ScreenGui.ResetOnSpawn = false
+
+-- กรอบหลัก (Main Frame)
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+MainFrame.Position = UDim2.new(0.2, 0, 0.15, 0)
+MainFrame.Size = UDim2.new(0, 520, 0, 340)
+MainFrame.ClipsDescendants = true
+MainFrame.Active = true
+MainFrame.Draggable = true
+
+local UICorner = Instance.new("UICorner", MainFrame)
+UICorner.CornerRadius = UDim.new(0, 10)
+
+-- ขอบเส้นสายรุ้งรอบเมนู (Rainbow Border)
+local RainbowStroke = Instance.new("UIStroke", MainFrame)
+RainbowStroke.Thickness = 2.5
+RainbowStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+-- หัวข้อชื่อปก (Title)
+local Title = Instance.new("TextLabel")
+Title.Name = "Title"
+Title.Parent = MainFrame
+Title.BackgroundTransparency = 1
+Title.Position = UDim2.new(0, 15, 0, 10)
+Title.Size = UDim2.new(0, 200, 0, 25)
+Title.Font = Enum.Font.SourceSansBold
+Title.Text = "📱 ไอโฟน888❤️"
+Title.TextSize = 20
+Title.TextXAlignment = Enum.TextXAlignment.Left
+
+-- กรอบเมนูด้านซ้าย (Sidebar)
+local Sidebar = Instance.new("Frame")
+Sidebar.Name = "Sidebar"
+Sidebar.Parent = MainFrame
+Sidebar.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
+Sidebar.Position = UDim2.new(0, 10, 0, 45)
+Sidebar.Size = UDim2.new(0, 120, 0, 280)
+
+local SidebarCorner = Instance.new("UICorner", Sidebar)
+SidebarCorner.CornerRadius = UDim.new(0, 8)
+
+local SidebarLayout = Instance.new("UIListLayout", Sidebar)
+SidebarLayout.Padding = UDim.new(0, 8)
+SidebarLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+-- กรอบแสดงเนื้อหาด้านขวา (Container)
+local Container = Instance.new("Frame")
+Container.Name = "Container"
+Container.Parent = MainFrame
+Container.BackgroundTransparency = 1
+Container.Position = UDim2.new(0, 140, 0, 45)
+Container.Size = UDim2.new(0, 370, 0, 280)
+
+--------------------------------------------------------
+-- 🌈 ระบบลูปสีสายรุ้ง (Rainbow Effect)
+--------------------------------------------------------
+local rainbowElements = {}
+
+RunService.RenderStepped:Connect(function()
+    local hue = (tick() % 3) / 3 -- วนลูปเปลี่ยนสีรุ้ง
+    local rainbowColor = Color3.fromHSV(hue, 0.8, 1)
+    
+    -- เปลี่ยนสีขอบและหัวข้อ
+    RainbowStroke.Color = rainbowColor
+    Title.TextColor3 = rainbowColor
+    
+    -- เปลี่ยนสีองค์ประกอบสายรุ้งอื่นๆ (ปุ่มเปิดใช้งาน)
+    for _, elem in pairs(rainbowElements) do
+        if elem.IsSwitch then
+            if elem.State then
+                elem.Object.BackgroundColor3 = rainbowColor
+            end
+        elseif elem.IsTab then
+            if elem.Selected then
+                elem.Object.BackgroundColor3 = rainbowColor
+            end
+        end
+    end
+end)
+
+--------------------------------------------------------
+-- ระบบเปลี่ยนแท็บเมนู
+--------------------------------------------------------
+local tabs = {}
+
+local function createTab(tabName)
+    local Page = Instance.new("ScrollingFrame")
+    Page.Name = tabName .. "Page"
+    Page.Parent = Container
+    Page.Size = UDim2.new(1, 0, 1, 0)
+    Page.BackgroundTransparency = 1
+    Page.ScrollBarThickness = 3
+    Page.Visible = false
+
+    local PageLayout = Instance.new("UIListLayout", Page)
+    PageLayout.Padding = UDim.new(0, 8)
+
+    local TabBtn = Instance.new("TextButton")
+    TabBtn.Name = tabName .. "Btn"
+    TabBtn.Parent = Sidebar
+    TabBtn.Size = UDim2.new(0.9, 0, 0, 38)
+    TabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    TabBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+    TabBtn.Font = Enum.Font.SourceSansBold
+    TabBtn.TextSize = 14
+    TabBtn.Text = tabName
+
+    local TabCorner = Instance.new("UICorner", TabBtn)
+    TabCorner.CornerRadius = UDim.new(0, 6)
+
+    local tabData = {Page = Page, Btn = TabBtn, Object = TabBtn, IsTab = true, Selected = false}
+    table.insert(rainbowElements, tabData)
+
+    TabBtn.MouseButton1Click:Connect(function()
+        for _, t in pairs(tabs) do
+            t.Page.Visible = false
+            t.Selected = false
+            t.Btn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+            t.Btn.TextColor3 = Color3.fromRGB(200, 200, 200)
+        end
+        Page.Visible = true
+        tabData.Selected = true
+        TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end)
+
+    tabs[tabName] = tabData
+    return Page
+end
+
+-- หมวดหมู่หลักตามตัวอย่างในรูป[span_5](start_span)[span_5](end_span)[span_6](start_span)[span_6](end_span)[span_7](start_span)[span_7](end_span)
+local PageShoot = createTab("ระบบเล็งยิง") --[span_8](start_span)[span_8](end_span)
+local PageESP = createTab("มองทะลุ")    --[span_9](start_span)[span_9](end_span)
+local PageGun = createTab("ปืนโหด")      --[span_10](start_span)[span_10](end_span)
+local PageTarget = createTab("เลือกเป้าหมาย") --[span_11](start_span)[span_11](end_span)
+
+--------------------------------------------------------
+-- UI Components (Toggle เปิด/ปิด สไตล์สายรุ้ง)
+--------------------------------------------------------
+local function createToggle(parent, labelText, defaultState, callback)
+    local Frame = Instance.new("Frame")
+    Frame.Parent = parent
+    Frame.Size = UDim2.new(1, -10, 0, 36)
+    Frame.BackgroundColor3 = Color3.fromRGB(26, 26, 32)
+
+    local FrameCorner = Instance.new("UICorner", Frame)
+    FrameCorner.CornerRadius = UDim.new(0, 6)
+
+    local Label = Instance.new("TextLabel")
+    Label.Parent = Frame
+    Label.BackgroundTransparency = 1
+    Label.Position = UDim2.new(0, 10, 0, 0)
+    Label.Size = UDim2.new(0, 220, 1, 0)
+    Label.Font = Enum.Font.SourceSans
+    Label.Text = labelText
+    Label.TextColor3 = Color3.fromRGB(230, 230, 230)
+    Label.TextSize = 14
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+
+    local Switch = Instance.new("TextButton")
+    Switch.Parent = Frame
+    Switch.Position = UDim2.new(1, -50, 0.5, -10)
+    Switch.Size = UDim2.new(0, 40, 0, 20)
+    Switch.BackgroundColor3 = defaultState and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(50, 50, 60)
+    Switch.Text = ""
+
+    local SwitchCorner = Instance.new("UICorner", Switch)
+    SwitchCorner.CornerRadius = UDim.new(1, 0)
+
+    local Circle = Instance.new("Frame")
+    Circle.Parent = Switch
+    Circle.Position = defaultState and UDim2.new(1, -18, 0.5, -7) or UDim2.new(0, 2, 0.5, -7)
+    Circle.Size = UDim2.new(0, 14, 0, 14)
+    Circle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+
+    local CircleCorner = Instance.new("UICorner", Circle)
+    CircleCorner.CornerRadius = UDim.new(1, 0)
+
+    local toggleData = {Object = Switch, IsSwitch = true, State = defaultState}
+    table.insert(rainbowElements, toggleData)
+
+    Switch.MouseButton1Click:Connect(function()
+        toggleData.State = not toggleData.State
+        if not toggleData.State then
+            Switch.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+        end
+        Circle.Position = toggleData.State and UDim2.new(1, -18, 0.5, -7) or UDim2.new(0, 2, 0.5, -7)
+        callback(toggleData.State)
+    end)
+end
+
+--------------------------------------------------------
+-- ใส่รายการเมนูตามรูปภาพ[span_12](start_span)[span_12](end_span)[span_13](start_span)[span_13](end_span)[span_14](start_span)[span_14](end_span)[span_15](start_span)[span_15](end_span)[span_16](start_span)[span_16](end_span)
+--------------------------------------------------------
+-- 1. ระบบเล็งยิง[span_17](start_span)[span_17](end_span)[span_18](start_span)[span_18](end_span)[span_19](start_span)[span_19](end_span)
+createToggle(PageShoot, "เปิดใช้งาน Silent Aim", false, function(s) end) --[span_20](start_span)[span_20](end_span)
+createToggle(PageShoot, "ยิงอัตโนมัติ", false, function(s) end) --[span_21](start_span)[span_21](end_span)
+createToggle(PageShoot, "ยิงขณะเดิน", false, function(s) end) --[span_22](start_span)[span_22](end_span)
+createToggle(PageShoot, "เดินไม่ช้าลงขณะยิง", false, function(s) end) --[span_23](start_span)[span_23](end_span)
+createToggle(PageShoot, "โหมดมือถือ", true, function(s) end) --[span_24](start_span)[span_24](end_span)
+createToggle(PageShoot, "แสดงวงกลม FOV", false, function(s) end) --[span_25](start_span)[span_25](end_span)[span_26](start_span)[span_26](end_span)
+createToggle(PageShoot, "FOV ตามเมาส์ (ไม่ติ๊ก = กลางจอ)", false, function(s) end) --[span_27](start_span)[span_27](end_span)[span_28](start_span)[span_28](end_span)
+createToggle(PageShoot, "แสดงเส้น Tracer", false, function(s) end) --[span_29](start_span)[span_29](end_span)
+createToggle(PageShoot, "เช็กกำแพง (Wall Check)", true, function(s) end) --[span_30](start_span)[span_30](end_span)[span_31](start_span)[span_31](end_span)
+createToggle(PageShoot, "เช็กทีม (Team Check)", true, function(s) end) --[span_32](start_span)[span_32](end_span)[span_33](start_span)[span_33](end_span)
+
+-- 2. มองทะลุ[span_34](start_span)[span_34](end_span)
+createToggle(PageESP, "เปิดใช้งาน ESP", false, function(s) end) --[span_35](start_span)[span_35](end_span)
+createToggle(PageESP, "กรอบตัวละคร", false, function(s) end) --[span_36](start_span)[span_36](end_span)
+createToggle(PageESP, "แสดงชื่อผู้เล่น", false, function(s) end) --[span_37](start_span)[span_37](end_span)
+createToggle(PageESP, "หลอดเลือด", false, function(s) end) --[span_38](start_span)[span_38](end_span)
+createToggle(PageESP, "แสดงระยะห่าง", false, function(s) end) --[span_39](start_span)[span_39](end_span)
+createToggle(PageESP, "มองกระเป๋า", false, function(s) end) --[span_40](start_span)[span_40](end_span)
+
+-- 3. ปืนโหด[span_41](start_span)[span_41](end_span)
+local WarnFrame = Instance.new("Frame")
+WarnFrame.Parent = PageGun
+WarnFrame.Size = UDim2.new(1, -10, 0, 45)
+WarnFrame.BackgroundColor3 = Color3.fromRGB(60, 10, 10)
+
+local WarnCorner = Instance.new("UICorner", WarnFrame)
+WarnCorner.CornerRadius = UDim.new(0, 6)
+
+local WarnLabel = Instance.new("TextLabel")
+WarnLabel.Parent = WarnFrame
+WarnLabel.BackgroundTransparency = 1
+WarnLabel.Size = UDim2.new(1, 0, 1, 0)
+WarnLabel.Font = Enum.Font.SourceSansBold
+WarnLabel.Text = "⚠️ หากปิดระบบปืนโหด\nต้องรีตัวละคร (Reset Character) เพื่อให้ค่ากลับมาปกติ" --[span_42](start_span)[span_42](end_span)
+WarnLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
+WarnLabel.TextSize = 13
+
+createToggle(PageGun, "เปิดใช้งาน ปืนโหด", false, function(s) end) --[span_43](start_span)[span_43](end_span)
+
+-- 4. เลือกเป้าหมาย[span_44](start_span)[span_44](end_span)
+createToggle(PageTarget, "ล็อกเป้าผู้เล่นใกล้ที่สุด", false, function(s) end)
+
+-- เปิดแท็บแรกอัตโนมัติ
+tabs["ระบบเล็งยิง"].Selected = true
+tabs["ระบบเล็งยิง"].Page.Visible = true
+
+-- แจ้งเตือนเมื่อโหลดสคริปต์สำเร็จ
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "📱 ไอโฟน888❤️",
+    Text = "โหลดสคริปต์สายรุ้งเรียบร้อยแล้ว!",
+    Duration = 4
+})
